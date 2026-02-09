@@ -390,9 +390,9 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 ---
 
-## Phase 6.5 : Frontend Next.js - Développement (Semaine 4-5)
+## Phase 7 : Frontend Next.js - Développement (Semaine 4-5)
 
-### 6.5.1 Pages et Composants
+### 7.1 Pages et Composants
 
 #### Page d'accueil - Dashboard comparatif (`app/page.tsx`)
 - [ ] **Fonctionnalité principale** : comparer 2+ joueurs avec métriques visuelles
@@ -445,7 +445,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 - [ ] `LoadingSpinner`, `ErrorAlert`, `EmptyState`
 - [ ] `StatsBadge` : badge pour afficher une métrique
 
-### 6.5.2 Client API et State Management
+### 7.2 Client API et State Management
 - [ ] Créer `lib/api.ts` avec fonctions async :
   ```typescript
   // Gestion des joueurs
@@ -517,7 +517,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - `usePlayers()` - liste des joueurs
   - `usePlayer(id)` - détails d'un joueur
 
-### 6.5.3 UI/UX et Visualisations
+### 7.3 UI/UX et Visualisations
 - [ ] Installer les dépendances de visualisation :
   - `recharts` ou `chart.js` + `react-chartjs-2` pour les graphiques
   - `lucide-react` pour les icônes
@@ -549,7 +549,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Contrastes AA minimum (4.5:1 texte, 3:1 UI)
   - Screen reader friendly
 
-### 6.5.4 Tests Frontend
+### 7.4 Tests Frontend
 - [ ] Tests unitaires avec Jest + React Testing Library :
   - Composants de visualisation
   - Hooks personnalisés
@@ -566,9 +566,9 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 ---
 
-## Phase 7 : Documentation API (Semaine 5)
+## Phase 8 : Documentation API (Semaine 5)
 
-### 7.1 Documentation Backend
+### 8.1 Documentation Backend
 - [ ] Créer un fichier OpenAPI (Swagger) 3.0 ou utiliser `utoipa` crate :
   ```rust
   #[utoipa::path(
@@ -587,11 +587,11 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Codes d'erreur
   - Exemples
 
-### 7.2 Documentation Frontend
+### 8.2 Documentation Frontend
 - [ ] Documenter les composants avec JSDoc
 - [ ] Créer un Storybook (optionnel) pour visualiser les composants
 
-### 7.3 README
+### 8.3 README
 - [ ] Backend README.md :
   - Architecture
   - Installation (Rust, MongoDB)
@@ -608,9 +608,9 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 ---
 
-## Phase 8 : Conteneurisation (Semaine 5-6)
+## Phase 9 : Conteneurisation (Semaine 5-6)
 
-### 8.1 Dockerfile Backend (Rust)
+### 9.1 Dockerfile Backend (Rust)
 - [ ] Créer `backend/Dockerfile` multi-stage :
   ```dockerfile
   # Stage 1: Build
@@ -631,7 +631,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   ```
 - [ ] Créer `.dockerignore` pour backend
 
-### 8.2 Dockerfile Frontend (Next.js)
+### 9.2 Dockerfile Frontend (Next.js)
 - [ ] Créer `frontend/Dockerfile` multi-stage :
   ```dockerfile
   # Stage 1: Dependencies
@@ -660,7 +660,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 - [ ] Configurer `next.config.js` avec `output: 'standalone'`
 - [ ] Créer `.dockerignore` pour frontend
 
-### 8.3 Docker Compose (développement local)
+### 9.3 Docker Compose (développement local)
 - [ ] Créer `docker-compose.yml` à la racine :
   ```yaml
   services:
@@ -697,9 +697,9 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 ---
 
-## Phase 9 : Déploiement Azure (Semaine 6-7)
+## Phase 10 : Déploiement Azure (Semaine 6-7)
 
-### 9.1 Préparation des ressources Azure
+### 10.1 Préparation des ressources Azure
 - [ ] **Azure Container Registry (ACR)** :
   - Créer un registre pour stocker les images Docker (backend + frontend)
   - SKU : Standard ou Premium
@@ -715,7 +715,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - **Option A** : Static Web Apps (si SSG uniquement)
   - **Option B** : Container Apps (si SSR/ISR nécessaire) — RECOMMANDÉ
 
-### 9.2 Infrastructure as Code (Bicep)
+### 10.2 Infrastructure as Code (Bicep)
 - [ ] Créer `infra/main.bicep` avec :
   - Resource Group
   - Azure Container Registry
@@ -770,7 +770,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   }
   ```
 
-### 9.3 Configuration des secrets
+### 10.3 Configuration des secrets
 - [ ] Créer un Azure Key Vault
 - [ ] Stocker les secrets :
   - `PUBG-API-KEY`
@@ -779,7 +779,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Activer System-Assigned Identity sur les Container Apps
   - Donner les permissions `Key Vault Secrets User` aux identities
 
-### 9.4 CI/CD Pipeline (GitHub Actions)
+### 10.4 CI/CD Pipeline (GitHub Actions)
 - [ ] Créer `.github/workflows/deploy-backend.yml` :
   ```yaml
   name: Deploy Backend to Azure
@@ -824,7 +824,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - `AZURE_CREDENTIALS` (service principal JSON)
   - `ACR_NAME` (nom du registre)
 
-### 9.5 Configuration Backend Container App
+### 10.5 Configuration Backend Container App
 - [ ] Variables d'environnement :
   - `RUST_ENV=production`
   - `HOST=0.0.0.0`
@@ -842,7 +842,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Max replicas: 5
   - Rules: HTTP requests (ex: 100 concurrent requests par replica)
 
-### 9.6 Configuration Frontend Container App
+### 10.6 Configuration Frontend Container App
 - [ ] Variables d'environnement :
   - `NODE_ENV=production`
   - `NEXT_PUBLIC_API_URL` (URL du backend Container App)
@@ -853,7 +853,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Min replicas: 1
   - Max replicas: 3
 
-### 9.7 Networking et Sécurité
+### 10.7 Networking et Sécurité
 - [ ] Configurer le domaine personnalisé (optionnel) :
   - Backend API : `api.pubg-tracker.com`
   - Frontend : `pubg-tracker.com`
@@ -866,9 +866,9 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 ---
 
-## Phase 10 : Monitoring et Observabilité Azure (Semaine 7-8)
+## Phase 11 : Monitoring et Observabilité Azure (Semaine 7-8)
 
-### 10.1 Application Insights
+### 11.1 Application Insights
 - [ ] Configurer Application Insights pour le backend Rust :
   - Utiliser `azure-monitor` ou instrumentation custom via HTTP
   - Ou envoyer les logs structurés vers Log Analytics directement
@@ -882,7 +882,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Nombre de retry 429
   - Temps de réponse frontend
 
-### 10.2 Azure Monitor
+### 11.2 Azure Monitor
 - [ ] Configurer des alertes :
   - Taux d'erreur backend > 5%
   - Latence p95 > 1s
@@ -898,7 +898,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Utilisation RU/s Cosmos DB
   - Nombre de réplicas actifs
 
-### 10.3 Logs
+### 11.3 Logs
 - [ ] Configurer la collecte des logs dans Log Analytics Workspace
 - [ ] Backend Rust : logs JSON structurés avec `tracing`
 - [ ] Frontend Next.js : logs server-side + erreurs client
@@ -910,9 +910,9 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 ---
 
-## Phase 11 : Optimisations et Améliorations (Semaine 7-8)
+## Phase 12 : Optimisations et Améliorations (Semaine 7-8)
 
-### 11.1 Performance Backend
+### 12.1 Performance Backend
 - [ ] Implémenter un cache Redis (Azure Cache for Redis) :
   - Cache des résultats PUBG API (5-10 min TTL)
   - **Cache des statistiques calculées (60-300s TTL)** - PRIORITAIRE pour dashboard
@@ -931,7 +931,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Parallélisation avec `tokio::spawn` pour plusieurs joueurs
   - Batch processing pour le dashboard multi-joueurs
 
-### 11.2 Performance Frontend
+### 12.2 Performance Frontend
 - [ ] Optimiser les rendus Next.js :
   - Utiliser React.memo pour les composants de graphiques
   - Virtualisation pour les longues listes (react-virtual)
@@ -943,7 +943,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Prefetching avec SWR
   - Cache stale-while-revalidate
 
-### 11.3 Scalabilité
+### 12.3 Scalabilité
 - [ ] Tester le scaling automatique avec charge :
   - Tests avec Azure Load Testing
   - Mesurer le temps de scale-up/down
@@ -957,7 +957,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Pagination côté serveur pour dashboard
   - Lazy loading des graphiques
 
-### 11.4 Sécurité
+### 12.4 Sécurité
 - [ ] Audit de sécurité :
   - Vérifier qu'aucun secret n'est exposé (PUBG_API_KEY notamment)
   - Tester les headers de sécurité (helmet equivalent en Rust)
@@ -974,9 +974,9 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 ---
 
-## Phase 12 : Documentation et Formation (Semaine 8)
+## Phase 13 : Documentation et Formation (Semaine 8)
 
-### 12.1 Documentation technique
+### 13.1 Documentation technique
 - [ ] README.md complet :
   - **Architecture** (diagramme backend + frontend + Azure)
   - **Dashboard comparatif** : fonctionnalités, métriques, filtres
@@ -1001,7 +1001,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Exemples de requêtes/réponses
   - Guide d'intégration
 
-### 12.2 Documentation utilisateur
+### 13.2 Documentation utilisateur
 - [ ] Guide utilisateur dashboard :
   - Comment comparer des joueurs
   - Interprétation des métriques (K/D, win rate, etc.)
@@ -1012,7 +1012,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Comment ajouter un joueur ?
   - Que signifie "rate limit" ?
 
-### 12.3 Passation
+### 13.3 Passation
 - [ ] Session de démonstration :
   - **Démo du dashboard comparatif**
   - Flux complet utilisateur
@@ -1025,9 +1025,9 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 ---
 
-## Phase 13 : Post-Déploiement (Semaine 8-9)
+## Phase 14 : Post-Déploiement (Semaine 8-9)
 
-### 13.1 Tests de production
+### 14.1 Tests de production
 - [ ] Tests de bout en bout en production :
   - Ajouter un joueur réel
   - Tester le dashboard avec plusieurs joueurs
@@ -1044,7 +1044,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Vérifier la réception des alertes
   - Tester les runbooks de réponse
 
-### 13.2 Optimisation continue
+### 14.2 Optimisation continue
 - [ ] Analyser les métriques de production :
   - **Cache hit rate** (objectif > 80% pour les stats)
   - Temps de calcul des statistiques
@@ -1061,7 +1061,7 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Activer auto-scaling Cosmos DB si pertinent
   - Optimiser le cache Redis (tier approprié)
 
-### 13.3 Feedback et améliorations
+### 14.3 Feedback et améliorations
 - [ ] Collecter le feedback utilisateur :
   - Facilité d'utilisation du dashboard
   - Pertinence des métriques affichées
@@ -1283,12 +1283,12 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 1. **Phase 1** - Initialiser les deux projets (backend Rust + frontend Next.js)
 2. **Phase 2-4** - Développer le backend Rust en local avec MongoDB local
-3. **Phase 6.5** - Développer le frontend Next.js en parallèle
+3. **Phase 7** - Développer le frontend Next.js en parallèle
 4. **Phase 6** - Implémenter les tests (backend + frontend)
-5. **Phase 8** - Conteneuriser les deux applications
-6. **Phase 9** - Provisionner l'infrastructure Azure et déployer
-7. **Phase 10** - Configurer monitoring et alertes
-8. **Phase 11-13** - Optimiser selon les métriques de production
+5. **Phase 9** - Conteneuriser les deux applications
+6. **Phase 10** - Provisionner l'infrastructure Azure et déployer
+7. **Phase 11** - Configurer monitoring et alertes
+8. **Phase 12-14** - Optimiser selon les métriques de production
 
 ### Ordre de développement recommandé
 
