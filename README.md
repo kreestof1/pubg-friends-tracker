@@ -166,7 +166,7 @@ Voir le [Plan d'Implémentation](PLAN_IMPLEMENTATION.md) pour les détails compl
 
 ## 👥 Auteurs
 
-Équipe PUBG Friends Tracker
+Kreestof
 
 ## 🔗 Liens utiles
 
