@@ -1,12 +1,12 @@
-use axum::{extract::{Path, State}, http::StatusCode, Json};
+use axum::{extract::{Path, Query, State}, http::StatusCode, Json};
 use mongodb::bson::oid::ObjectId;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use validator::Validate;
 
 use crate::{
-    models::{CreatePlayerRequest, PlayerResponse},
-    services::PlayerService,
+    models::{CreatePlayerRequest, PlayerResponse, StatsResponse},
+    services::{PlayerService, StatsService},
 };
 
 pub type AppState = Arc<AppStateInner>;
@@ -14,6 +14,7 @@ pub type AppState = Arc<AppStateInner>;
 #[derive(Clone)]
 pub struct AppStateInner {
     pub player_service: Arc<PlayerService>,
+    pub stats_service: Arc<StatsService>,
 }
 
 #[derive(Debug, Serialize)]
@@ -179,6 +180,80 @@ pub async fn get_player_matches(
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorResponse {
                 error: format!("Failed to fetch matches: {}", e),
+            }),
+        )),
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct StatsQuery {
+    #[serde(default = "default_period")]
+    pub period: String,
+    #[serde(default = "default_mode")]
+    pub mode: String,
+    #[serde(default = "default_shard")]
+    pub shard: String,
+}
+
+fn default_period() -> String {
+    "7d".to_string()
+}
+
+fn default_mode() -> String {
+    "all".to_string()
+}
+
+fn default_shard() -> String {
+    "steam".to_string()
+}
+
+// GET /api/players/:id/stats?period=7d&mode=all&shard=steam
+pub async fn get_player_stats(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Query(query): Query<StatsQuery>,
+) -> Result<Json<StatsResponse>, (StatusCode, Json<ErrorResponse>)> {
+    let object_id = ObjectId::parse_str(&id).map_err(|_| {
+        (
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                error: "Invalid player ID format".to_string(),
+            }),
+        )
+    })?;
+
+    // Get player to verify it exists
+    let _player = match state.player_service.get_player(&object_id).await {
+        Ok(Some(p)) => p,
+        Ok(None) => {
+            return Err((
+                StatusCode::NOT_FOUND,
+                Json(ErrorResponse {
+                    error: "Player not found".to_string(),
+                }),
+            ))
+        }
+        Err(e) => {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: format!("Failed to fetch player: {}", e),
+                }),
+            ))
+        }
+    };
+
+    // Get or compute stats
+    match state
+        .stats_service
+        .get_or_compute_stats(&object_id, &query.period, &query.mode, &query.shard)
+        .await
+    {
+        Ok(stats) => Ok(Json(StatsResponse::from(stats))),
+        Err(e) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: format!("Failed to fetch stats: {}", e),
             }),
         )),
     }

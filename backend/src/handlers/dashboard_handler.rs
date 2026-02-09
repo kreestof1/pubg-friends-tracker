@@ -11,7 +11,7 @@ use crate::{
 
 #[derive(Debug, Deserialize)]
 pub struct DashboardQuery {
-    pub player_ids: String, // Comma-separated player IDs
+    pub ids: String, // Comma-separated player IDs
     #[serde(default = "default_period")]
     pub period: String,
     #[serde(default = "default_mode")]
@@ -34,23 +34,26 @@ fn default_shard() -> String {
 
 #[derive(Debug, Serialize)]
 pub struct DashboardResponse {
-    pub players: Vec<PlayerWithStats>,
+    pub players: Vec<PlayerStatsData>,
+    pub period: String,
+    pub mode: String,
 }
 
 #[derive(Debug, Serialize)]
-pub struct PlayerWithStats {
-    pub player: PlayerResponse,
+pub struct PlayerStatsData {
+    pub player_id: String,
+    pub name: String,
     pub stats: StatsResponse,
 }
 
-// GET /api/dashboard?player_ids=id1,id2,id3&period=7d&mode=all&shard=steam
+// GET /api/dashboard?ids=id1,id2,id3&period=7d&mode=all&shard=steam
 pub async fn get_dashboard_stats(
     State(state): State<AppState>,
     Query(query): Query<DashboardQuery>,
 ) -> Result<Json<DashboardResponse>, (StatusCode, Json<ErrorResponse>)> {
     // Parse player IDs
     let player_ids: Result<Vec<ObjectId>, _> = query
-        .player_ids
+        .ids
         .split(',')
         .map(|id| ObjectId::parse_str(id.trim()))
         .collect();
@@ -123,13 +126,16 @@ pub async fn get_dashboard_stats(
             }
         };
 
-        players_with_stats.push(PlayerWithStats {
-            player: PlayerResponse::from(player),
+        players_with_stats.push(PlayerStatsData {
+            player_id: player_id.to_hex(),
+            name: player.name.clone(),
             stats: StatsResponse::from(stats),
         });
     }
 
     Ok(Json(DashboardResponse {
         players: players_with_stats,
+        period: query.period,
+        mode: query.mode,
     }))
 }

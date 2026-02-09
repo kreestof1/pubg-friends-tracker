@@ -5,7 +5,7 @@ export interface Player {
   account_id: string;
   name: string;
   shard: string;
-  last_matches: string[];
+  last_matches?: string[];
   last_refreshed_at?: Date;
   created_at: Date;
   summary?: Record<string, unknown>;

@@ -16,6 +16,7 @@ pub fn create_api_routes() -> Router<AppState> {
         .route("/players", post(player_handler::create_player))
         .route("/players", get(player_handler::get_players))
         .route("/players/:id", get(player_handler::get_player))
+        .route("/players/:id/stats", get(player_handler::get_player_stats))
         .route("/players/:id/refresh", post(player_handler::refresh_player))
         .route("/players/:id", delete(player_handler::delete_player))
         .route("/players/:id/matches", get(player_handler::get_player_matches))

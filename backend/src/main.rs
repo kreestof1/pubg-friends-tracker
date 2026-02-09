@@ -80,7 +80,10 @@ async fn main() {
     tracing::info!("All services initialized successfully");
 
     // Create application state
-    let app_state = Arc::new(AppStateInner { player_service });
+    let app_state = Arc::new(AppStateInner { 
+        player_service,
+        stats_service: stats_service.clone(),
+    });
 
     // Build API routes
     let api_routes = create_api_routes();
