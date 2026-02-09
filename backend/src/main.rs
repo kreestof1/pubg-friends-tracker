@@ -1,20 +1,20 @@
 use axum::{routing::get, Router};
 use std::{net::SocketAddr, sync::Arc};
-use tower_http::cors::CorsLayer;
 
 // Modules
 mod config;
 mod db;
 mod handlers;
+mod middleware;
 mod models;
 mod routes;
 mod services;
-// mod middleware;
 // mod utils;
 
 use config::Config;
 use db::MongoDb;
 use handlers::{AppState, AppStateInner};
+use middleware::{create_cors_layer, handle_errors, trace_request};
 use routes::create_api_routes;
 use services::{PlayerService, PubgApiService, StatsService};
 
@@ -23,10 +23,14 @@ async fn main() {
     // Load environment variables
     dotenv::dotenv().ok();
 
-    // Initialize tracing
+    // Initialize tracing with environment-based log level
+    let log_level = std::env::var("RUST_LOG")
+        .unwrap_or_else(|_| "info".to_string());
+    
     tracing_subscriber::fmt()
         .with_target(false)
         .with_level(true)
+        .with_env_filter(log_level)
         .json()
         .init();
 
@@ -82,11 +86,15 @@ async fn main() {
     let api_routes = create_api_routes();
 
     // Build our application with routes
+    let cors_origin = std::env::var("CORS_ORIGIN").unwrap_or_else(|_| "*".to_string());
+    
     let app = Router::new()
         .route("/health", get(health_check))
         .nest("/api", api_routes)
         .with_state(app_state)
-        .layer(CorsLayer::permissive()); // TODO: Configure CORS properly in production
+        .layer(axum::middleware::from_fn(trace_request))
+        .layer(axum::middleware::from_fn(handle_errors))
+        .layer(create_cors_layer(&cors_origin));
 
     // Run the server
     let addr: SocketAddr = format!("{}:{}", config.host, config.port)

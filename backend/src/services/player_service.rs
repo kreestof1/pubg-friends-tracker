@@ -27,15 +27,19 @@ impl PlayerService {
         }
     }
 
+    #[tracing::instrument(skip(self), fields(player_name = %name, shard = %shard))]
     pub async fn add_player(
         &self,
         name: &str,
         shard: &str,
     ) -> Result<Player, Box<dyn std::error::Error>> {
+        tracing::debug!("Starting add_player operation");
+        
         // Check if player already exists
         let repo = PlayerRepository::new(self.db.players());
         
         // Fetch player from PUBG API
+        tracing::debug!("Fetching player from PUBG API");
         let pubg_response = self.pubg_api.get_player_by_name(shard, name).await?;
         
         if pubg_response.data.is_empty() {
@@ -93,10 +97,12 @@ impl PlayerService {
         repo.find_by_id(id).await
     }
 
+    #[tracing::instrument(skip(self), fields(player_id = %id.to_hex()))]
     pub async fn refresh_player(
         &self,
         id: &ObjectId,
     ) -> Result<Player, Box<dyn std::error::Error>> {
+        tracing::debug!("Starting refresh_player operation");
         let repo = PlayerRepository::new(self.db.players());
         
         let player = repo
@@ -105,6 +111,7 @@ impl PlayerService {
             .ok_or("Player not found")?;
 
         // Fetch updated data from PUBG API
+        tracing::debug!("Fetching updated player data from PUBG API");
         let pubg_response = self
             .pubg_api
             .get_player_by_name(&player.shard, &player.name)
@@ -141,7 +148,9 @@ impl PlayerService {
         Ok(updated_player)
     }
 
+    #[tracing::instrument(skip(self), fields(player_id = %id.to_hex()))]
     pub async fn delete_player(&self, id: &ObjectId) -> Result<(), mongodb::error::Error> {
+        tracing::debug!("Starting delete_player operation");
         let repo = PlayerRepository::new(self.db.players());
         
         // Delete player stats

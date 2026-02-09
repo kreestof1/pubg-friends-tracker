@@ -24,6 +24,7 @@ impl StatsService {
         StatsService { cache, db }
     }
 
+    #[tracing::instrument(skip(self), fields(player_id = %player_id.to_hex(), period = %period, mode = %mode, shard = %shard))]
     pub async fn get_or_compute_stats(
         &self,
         player_id: &ObjectId,
@@ -35,7 +36,7 @@ impl StatsService {
 
         // Check memory cache
         if let Some(cached_stats) = self.cache.get(&cache_key).await {
-            tracing::debug!("Stats found in memory cache for {}", cache_key);
+            tracing::debug!("Stats found in memory cache");
             return Ok(cached_stats);
         }
 

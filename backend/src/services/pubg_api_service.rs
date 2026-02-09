@@ -63,11 +63,13 @@ impl PubgApiService {
         headers
     }
 
+    #[tracing::instrument(skip(self), fields(shard = %shard, player_name = %player_name))]
     pub async fn get_player_by_name(
         &self,
         shard: &str,
         player_name: &str,
     ) -> Result<PubgPlayerResponse, PubgApiError> {
+        tracing::debug!("Requesting player data from PUBG API");
         let url = format!(
             "{}/{}/players?filter[playerNames]={}",
             self.base_url, shard, player_name
@@ -123,6 +125,7 @@ impl PubgApiService {
 
             match status.as_u16() {
                 200 => {
+                    tracing::info!("Successfully fetched data from PUBG API");
                     return response.json::<T>().await.map_err(|e| {
                         PubgApiError::ServerError(format!("Failed to parse response: {}", e))
                     });

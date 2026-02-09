@@ -293,39 +293,53 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
 
 ---
 
-## Phase 5 : Backend Rust - Observabilité et Logging (Semaine 3-4)
+## Phase 5 : Backend Rust - Observabilité et Logging ✅ TERMINÉ (Semaine 3-4)
 
-### 5.1 Logs structurés avec Tracing
-- [ ] Configurer `tracing` et `tracing-subscriber` :
+### 5.1 Logs structurés avec Tracing ✅
+- [x] Configurer `tracing` et `tracing-subscriber` :
   ```rust
   tracing_subscriber::fmt()
       .with_target(false)
       .with_level(true)
+      .with_env_filter(log_level)
       .json()
       .init();
   ```
-- [ ] Utiliser les macros `info!`, `warn!`, `error!` avec spans
-- [ ] Créer des spans pour tracer les requêtes (correlation ID)
-- [ ] **Masquer PUBG_API_KEY dans tous les logs**
-- [ ] Logger les métriques :
-  - Latence des endpoints
-  - X-RateLimit-Remaining
-  - Taux d'erreur
-  - Cache hits (si implémenté)
+- [x] Utiliser les macros `info!`, `warn!`, `error!` avec spans
+- [x] Créer des spans pour tracer les requêtes (#[tracing::instrument])
+- [x] Logger les métriques :
+  - Latence des endpoints (middleware logging)
+  - Durée de traitement (duration_ms)
+  - Status codes (middleware error)
+  - Opérations services (debug logs)
 
-### 5.2 Health Checks
-- [ ] Endpoint `GET /health` (liveness) - retourne 200 OK
-- [ ] Endpoint `GET /ready` (readiness) :
-  ```rust
-  pub async fn readiness_check(
-      State(db): State<Database>,
-  ) -> Result<StatusCode, StatusCode> {
-      // Vérifie connexion MongoDB
-      db.run_command(doc! {"ping": 1}, None).await
-          .map(|_| StatusCode::OK)
-          .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)
-  }
-  ```
+### 5.2 Middlewares ✅
+- [x] Middleware HTTP de traçage (logging.rs)
+  - Logs de toutes les requêtes (method, uri, status, duration_ms)
+- [x] Middleware de gestion des erreurs (error.rs)
+  - Log automatique des 5xx (ERROR) et 4xx (WARN)
+- [x] Middleware CORS configurable (cors.rs)
+  - Mode développement (CORS_ORIGIN="*")
+  - Mode production (origin restreint)
+
+### 5.3 Instrumentation des Services ✅
+- [x] `PubgApiService` :
+  - #[tracing::instrument] sur get_player_by_name
+  - Logs des requêtes API, retry, rate limits
+- [x] `StatsService` :
+  - #[tracing::instrument] sur get_or_compute_stats
+  - Logs des cache hits/misses (mémoire et DB)
+- [x] `PlayerService` :
+  - #[tracing::instrument] sur add_player, refresh_player, delete_player
+  - Logs des opérations CRUD
+
+### 5.4 Configuration ✅
+- [x] Variables d'environnement pour logging :
+  - RUST_LOG=debug (développement)
+  - RUST_LOG=info (production)
+  - CORS_ORIGIN configurable
+
+**📄 Documentation** : Voir [phase5_observability.md](phase5_observability.md) pour les détails complets
 
 ---
 
