@@ -4,5 +4,5 @@ pub mod pubg_api_service;
 pub mod stats_service;
 
 pub use player_service::PlayerService;
-pub use pubg_api_service::{PubgApiService, PubgApiError};
+pub use pubg_api_service::PubgApiService;
 pub use stats_service::StatsService;

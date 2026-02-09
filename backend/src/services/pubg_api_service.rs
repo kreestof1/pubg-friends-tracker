@@ -2,7 +2,7 @@ use reqwest::{Client, header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION}};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::models::{PubgPlayerResponse, PubgMatchResponse, PubgErrorResponse};
+use crate::models::{PubgPlayerResponse, PubgMatchResponse};
 
 #[derive(Debug)]
 pub enum PubgApiError {

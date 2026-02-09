@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::{
     db::{MongoDb, PlayerRepository},
-    models::{Player, PlayerSummary},
+    models::Player,
     services::{PubgApiService, StatsService},
 };
 

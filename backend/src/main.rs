@@ -13,7 +13,7 @@ mod services;
 
 use config::Config;
 use db::MongoDb;
-use handlers::{AppState, AppStateInner};
+use handlers::AppStateInner;
 use middleware::{create_cors_layer, handle_errors, trace_request};
 use routes::create_api_routes;
 use services::{PlayerService, PubgApiService, StatsService};

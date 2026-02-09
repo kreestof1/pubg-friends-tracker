@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use crate::{
     db::{MongoDb, StatsRepository},
-    models::{PlayerStats, PubgMatchResponse, PubgParticipantStats},
+    models::{PlayerStats, PubgMatchResponse},
 };
 
 pub struct StatsService {
@@ -107,7 +107,7 @@ impl StatsService {
 
             // Find participant data for this player
             for included in &match_data.included {
-                if let crate::models::PubgMatchIncluded::Participant { id, attributes } = included {
+                if let crate::models::PubgMatchIncluded::Participant { id: _, attributes } = included {
                     if attributes.stats.player_id == player_account_id {
                         matches_in_period += 1;
                         total_kills += attributes.stats.kills;

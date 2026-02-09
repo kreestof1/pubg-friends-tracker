@@ -1,12 +1,8 @@
 use axum::{
-    body::Body,
     extract::Request,
-    http::StatusCode,
     middleware::Next,
-    response::{IntoResponse, Response},
-    Json,
+    response::Response,
 };
-use serde_json::json;
 
 pub async fn handle_errors(request: Request, next: Next) -> Response {
     let response = next.run(request).await;
