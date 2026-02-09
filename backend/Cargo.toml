@@ -48,6 +48,10 @@ futures = "0.3"
 mockito = "1.2"
 wiremock = "0.6"
 testcontainers = "0.15"
+tokio-test = "0.4"
+axum-test = "14.2"
+tower = { version = "0.4", features = ["util"] }
+http-body-util = "0.1"
 
 [profile.release]
 opt-level = 3
