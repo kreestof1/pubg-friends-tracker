@@ -1,0 +1,56 @@
+[package]
+name = "pubg-tracker-api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]# Web framework
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# MongoDB
+mongodb = "2.8"
+bson = { version = "2.9", features = ["chrono-0_4"] }
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json"] }
+
+# Environment variables
+dotenv = "0.15"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Validation
+validator = { version = "0.18", features = ["derive"] }
+
+# Cache (optional)
+moka = { version = "0.12", features = ["future"] }
+
+# Datetime
+chrono = { version = "0.4", features = ["serde"] }
+
+# Async utilities
+futures = "0.3"
+
+[dev-dependencies]
+# Testing
+mockito = "1.2"
+wiremock = "0.6"
+testcontainers = "0.15"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

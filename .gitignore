@@ -1,0 +1,45 @@
+# Node.js / Frontend
+node_modules/
+.next/
+out/
+dist/
+build/
+.env
+.env.local
+.env.*.local
+*.log
+
+# Rust / Backend
+target/
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
+# IDEs
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Azure / Docker
+.azure/
+*.pfx
+*.p12
+
+# Tests
+coverage/
+.nyc_output/
+
+# Misc
+*.bak
+*.cache
+.turbo

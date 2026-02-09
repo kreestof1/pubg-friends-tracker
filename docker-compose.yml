@@ -1,0 +1,42 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/pubg-tracker
+      - PUBG_API_KEY=${PUBG_API_KEY}
+      - PUBG_API_BASE_URL=https://api.pubg.com
+      - CORS_ORIGIN=http://localhost:3000
+      - RUST_LOG=info
+    depends_on:
+      - mongo
+    networks:
+      - pubg-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api
+    depends_on:
+      - backend
+    networks:
+      - pubg-network
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - pubg-network
+
+volumes:
+  mongo-data:
+
+networks:
+  pubg-network:
+    driver: bridge
