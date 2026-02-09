@@ -5,15 +5,17 @@ use tower_http::cors::CorsLayer;
 // Modules
 mod config;
 mod db;
+mod handlers;
 mod models;
+mod routes;
 mod services;
-// mod handlers;
 // mod middleware;
-// mod routes;
 // mod utils;
 
 use config::Config;
 use db::MongoDb;
+use handlers::{AppState, AppStateInner};
+use routes::create_api_routes;
 use services::{PlayerService, PubgApiService, StatsService};
 
 #[tokio::main]
@@ -65,7 +67,7 @@ async fn main() {
 
     let stats_service = Arc::new(StatsService::new(shared_db.clone()));
 
-    let _player_service = Arc::new(PlayerService::new(
+    let player_service = Arc::new(PlayerService::new(
         shared_db.clone(),
         pubg_api.clone(),
         stats_service.clone(),
@@ -73,9 +75,17 @@ async fn main() {
 
     tracing::info!("All services initialized successfully");
 
+    // Create application state
+    let app_state = Arc::new(AppStateInner { player_service });
+
+    // Build API routes
+    let api_routes = create_api_routes();
+
     // Build our application with routes
     let app = Router::new()
         .route("/health", get(health_check))
+        .nest("/api", api_routes)
+        .with_state(app_state)
         .layer(CorsLayer::permissive()); // TODO: Configure CORS properly in production
 
     // Run the server

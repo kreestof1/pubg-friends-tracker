@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub struct PlayerService {
-    db: Arc<MongoDb>,
+    pub db: Arc<MongoDb>,
     pubg_api: Arc<PubgApiService>,
     stats_service: Arc<StatsService>,
 }
