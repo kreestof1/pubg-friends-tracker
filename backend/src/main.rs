@@ -6,14 +6,15 @@ use tower_http::cors::CorsLayer;
 mod config;
 mod db;
 mod models;
+mod services;
 // mod handlers;
 // mod middleware;
 // mod routes;
-// mod services;
 // mod utils;
 
 use config::Config;
 use db::MongoDb;
+use services::{PlayerService, PubgApiService, StatsService};
 
 #[tokio::main]
 async fn main() {
@@ -54,7 +55,23 @@ async fn main() {
         std::process::exit(1);
     }
 
-    let _shared_db = Arc::new(mongodb);
+    let shared_db = Arc::new(mongodb);
+
+    // Initialize services
+    let pubg_api = Arc::new(PubgApiService::new(
+        config.pubg_api_key.clone(),
+        config.pubg_api_base_url.clone(),
+    ));
+
+    let stats_service = Arc::new(StatsService::new(shared_db.clone()));
+
+    let _player_service = Arc::new(PlayerService::new(
+        shared_db.clone(),
+        pubg_api.clone(),
+        stats_service.clone(),
+    ));
+
+    tracing::info!("All services initialized successfully");
 
     // Build our application with routes
     let app = Router::new()
