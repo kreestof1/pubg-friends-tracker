@@ -47,8 +47,8 @@ describe('PlayerCard', () => {
     expect(screen.getByText('Never')).toBeInTheDocument();
   });
 
-  it('shows "0" matches when last_matches is undefined', () => {
-    const playerWithoutMatches = { ...mockPlayer, last_matches: undefined };
+  it('shows "0" matches when last_matches is empty', () => {
+    const playerWithoutMatches = { ...mockPlayer, last_matches: [] };
     render(<PlayerCard player={playerWithoutMatches} />);
     
     expect(screen.getByText('0')).toBeInTheDocument();

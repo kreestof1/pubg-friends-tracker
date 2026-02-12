@@ -85,17 +85,14 @@ impl StatsService {
             }
         }
 
-        // If no matches were fetched, return error
+        // If no matches were fetched, compute stats with empty matches (will return zeros)
         if matches.is_empty() {
-            tracing::error!("No match data available for player {}", player_id.to_hex());
-            return Err(mongodb::error::Error::custom(
-                "No match data available for this player. Please ensure the player has recent matches."
-            ));
+            tracing::warn!("No match data available for player {}, returning zero stats", player_id.to_hex());
+        } else {
+            tracing::info!("Computing stats from {} matches", matches.len());
         }
 
-        tracing::info!("Computing stats from {} matches", matches.len());
-
-        // Compute stats from fetched matches
+        // Compute stats from fetched matches (or empty array for zero stats)
         let mut stats = self.compute_stats_from_matches(&player.account_id, &matches, period);
         
         // Set the correct player_id, mode, and shard
