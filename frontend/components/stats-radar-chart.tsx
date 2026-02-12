@@ -37,7 +37,7 @@ export function StatsRadarChart({ data }: StatsRadarChartProps) {
     kills: Math.max(...data.map(p => p.stats.kills), 5),
     damage_dealt: Math.max(...data.map(p => p.stats.damage_dealt), 500),
     kd_ratio: Math.max(...data.map(p => p.stats.kd_ratio), 3),
-    win_rate: 100, // Already in percentage
+    win_rate: 100, // Backend returns percentage (0-100)
     survival_time: Math.max(...data.map(p => p.stats.survival_time), 1500),
   };
 
@@ -65,7 +65,7 @@ export function StatsRadarChart({ data }: StatsRadarChartProps) {
       ...Object.fromEntries(
         data.map((player, idx) => [
           `player${idx}`,
-          player.stats.win_rate * 100,
+          player.stats.win_rate,
         ])
       ),
     },

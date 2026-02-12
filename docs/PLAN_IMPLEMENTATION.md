@@ -550,12 +550,12 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Screen reader friendly
 
 ### 7.4 Tests Frontend
-- [ ] Tests unitaires avec Jest + React Testing Library :
+- [x] Tests unitaires avec Jest + React Testing Library :
   - Composants de visualisation
   - Hooks personnalisés
   - Fonctions utilitaires
   - Tests de snapshot pour les composants UI
-- [ ] Tests d'intégration :
+- [x] Tests d'intégration :
   - Flux complet d'ajout de joueur
   - Dashboard avec changement de filtres
   - Gestion des états de chargement et d'erreur
@@ -563,6 +563,25 @@ Application de suivi des joueurs et matches PUBG avec déploiement sur Azure.
   - Parcours utilisateur complet
   - Ajouter joueur → voir dashboard → comparer → rafraîchir
   - Tests cross-browser (Chrome, Firefox, Safari)
+
+### 7.5 Intégration API PUBG Réelle
+- [x] Remplacer les statistiques de démonstration par les vraies données PUBG :
+  - Modifier `StatsService::get_or_compute_stats()` pour récupérer les matchs
+  - Utiliser `PubgApiService::get_match()` pour chaque match_id du joueur
+  - Appeler `compute_stats_from_matches()` avec les données réelles
+  - Gérer les erreurs API et rate limiting
+- [x] Mise à jour des dépendances :
+  - `StatsService` prend maintenant `PubgApiService` en paramètre
+  - Mise à jour de `main.rs` et `dashboard_handler.rs`
+  - Mise à jour des tests d'intégration
+- [x] Gestion des erreurs :
+  - Logging des échecs de récupération de matchs
+  - Messages d'erreur explicites si aucun match disponible
+  - Continuation du traitement si certains matchs échouent
+- [ ] Tests avec de vraies données PUBG :
+  - Vérifier que les statistiques sont correctes
+  - Valider les calculs (K/D, win rate, etc.)
+  - Tester avec différents joueurs et périodes
 
 ---
 

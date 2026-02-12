@@ -46,4 +46,4 @@ export interface Match {
 
 export type Shard = 'steam' | 'xbox' | 'psn' | 'kakao' | 'stadia';
 export type GameMode = 'solo' | 'duo' | 'squad';
-export type Period = 'last7d' | 'last30d' | 'last90d';
+export type Period = '7d' | '30d' | '90d';

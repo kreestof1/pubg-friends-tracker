@@ -1,4 +1,4 @@
-use axum::{routing::get, Router};
+use axum::{routing::{get, post}, Router, http::StatusCode};
 use std::{net::SocketAddr, sync::Arc};
 
 // Modules
@@ -69,7 +69,7 @@ async fn main() {
         config.pubg_api_base_url.clone(),
     ));
 
-    let stats_service = Arc::new(StatsService::new(shared_db.clone()));
+    let stats_service = Arc::new(StatsService::new(shared_db.clone(), pubg_api.clone()));
 
     let player_service = Arc::new(PlayerService::new(
         shared_db.clone(),
@@ -93,6 +93,7 @@ async fn main() {
     
     let app = Router::new()
         .route("/health", get(health_check))
+        .route("/inform", post(|| async { StatusCode::NO_CONTENT })) // Ignore NextJS telemetry
         .nest("/api", api_routes)
         .with_state(app_state)
         .layer(axum::middleware::from_fn(trace_request))

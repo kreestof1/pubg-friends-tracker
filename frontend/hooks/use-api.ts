@@ -86,7 +86,7 @@ export function usePlayerMatches(playerId: string | null) {
  */
 export function useDashboard(
   playerIds: string[],
-  period: string = 'last7d',
+  period: string = '7d',
   mode: string = 'solo',
   shard: string = 'steam'
 ) {
@@ -118,7 +118,7 @@ export function useDashboard(
  */
 export function usePlayerStats(
   playerId: string | null,
-  period: string = 'last7d',
+  period: string = '7d',
   mode: string = 'solo',
   shard: string = 'steam'
 ) {

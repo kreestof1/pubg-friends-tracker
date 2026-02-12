@@ -258,3 +258,81 @@ pub async fn get_player_stats(
         )),
     }
 }
+// POST /api/players/refresh-all
+pub async fn refresh_all_players(
+    State(state): State<AppState>,
+) -> Result<Json<RefreshAllResponse>, (StatusCode, Json<ErrorResponse>)> {
+    match state.player_service.get_all_players().await {
+        Ok(players) => {
+            let mut success_count = 0;
+            let mut error_count = 0;
+            let mut errors = Vec::new();
+
+            for player in players {
+                if let Some(id) = player.id {
+                    match state.player_service.refresh_player(&id).await {
+                        Ok(_) => success_count += 1,
+                        Err(e) => {
+                            error_count += 1;
+                            errors.push(format!("{}: {}", player.name, e));
+                            tracing::warn!("Failed to refresh player {}: {}", player.name, e);
+                        }
+                    }
+                }
+            }
+
+            Ok(Json(RefreshAllResponse {
+                total: success_count + error_count,
+                success: success_count,
+                failed: error_count,
+                errors: if errors.is_empty() { None } else { Some(errors) },
+            }))
+        }
+        Err(e) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: format!("Failed to list players: {}", e),
+            }),
+        )),
+    }
+}
+
+// POST /api/stats/clear-cache
+pub async fn clear_all_stats_cache(
+    State(state): State<AppState>,
+) -> Result<Json<RefreshAllResponse>, (StatusCode, Json<ErrorResponse>)> {
+    // Direct MongoDB deletion to avoid deserialization issues
+    use mongodb::bson::doc;
+    
+    match state.stats_service.db.stats().delete_many(doc! {}, None).await {
+        Ok(result) => {
+            tracing::info!("Deleted {} stats from MongoDB", result.deleted_count);
+            
+            // Also clear memory cache by invalidating all possible combinations
+            // This is a brute force approach but ensures everything is cleared
+            state.stats_service.cache.invalidate_all();
+            
+            Ok(Json(RefreshAllResponse {
+                total: result.deleted_count as usize,
+                success: result.deleted_count as usize,
+                failed: 0,
+                errors: None,
+            }))
+        }
+        Err(e) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: format!("Failed to clear stats cache: {}", e),
+            }),
+        )),
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct RefreshAllResponse {
+    pub total: usize,
+    pub success: usize,
+    pub failed: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub errors: Option<Vec<String>>,
+}

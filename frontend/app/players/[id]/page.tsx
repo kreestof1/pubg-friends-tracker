@@ -18,7 +18,7 @@ interface PageProps {
 
 export default function PlayerDetailsPage({ params }: PageProps) {
   const { id } = use(params);
-  const [period, setPeriod] = useState<Period>('last7d');
+  const [period, setPeriod] = useState<Period>('7d');
   const [mode, setMode] = useState<GameMode>('solo');
   const [shard, setShard] = useState<Shard>('steam');
 
@@ -86,7 +86,7 @@ export default function PlayerDetailsPage({ params }: PageProps) {
         <div>
           <label className="block text-sm font-medium mb-2">Period</label>
           <div className="flex gap-2">
-            {(['last7d', 'last30d', 'last90d'] as Period[]).map((p) => (
+            {(['7d', '30d', '90d'] as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
@@ -96,7 +96,7 @@ export default function PlayerDetailsPage({ params }: PageProps) {
                     : 'bg-muted hover:bg-muted/80'
                 }`}
               >
-                {p === 'last7d' ? '7 Days' : p === 'last30d' ? '30 Days' : '90 Days'}
+                {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : '90 Days'}
               </button>
             ))}
           </div>
@@ -157,7 +157,7 @@ export default function PlayerDetailsPage({ params }: PageProps) {
             <MetricCard
               icon={TrendingUp}
               label="Win Rate"
-              value={`${(stats.win_rate * 100).toFixed(1)}%`}
+              value={`${stats.win_rate.toFixed(1)}%`}
               variant="success"
             />
             <MetricCard
@@ -209,7 +209,7 @@ export default function PlayerDetailsPage({ params }: PageProps) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Win Rate</span>
-                  <span className="font-semibold">{(stats.win_rate * 100).toFixed(1)}%</span>
+                  <span className="font-semibold">{stats.win_rate.toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Matches</span>

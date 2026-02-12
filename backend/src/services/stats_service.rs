@@ -4,24 +4,26 @@ use mongodb::bson::oid::ObjectId;
 use std::sync::Arc;
 
 use crate::{
-    db::{MongoDb, StatsRepository},
+    db::{MongoDb, StatsRepository, PlayerRepository},
     models::{PlayerStats, PubgMatchResponse},
+    services::PubgApiService,
 };
 
 pub struct StatsService {
-    cache: Cache<String, PlayerStats>,
-    db: Arc<MongoDb>,
+    pub cache: Cache<String, PlayerStats>,
+    pub db: Arc<MongoDb>,
+    pubg_api: Arc<PubgApiService>,
 }
 
 impl StatsService {
-    pub fn new(db: Arc<MongoDb>) -> Self {
+    pub fn new(db: Arc<MongoDb>, pubg_api: Arc<PubgApiService>) -> Self {
         // LRU cache with 1000 entries, TTL of 1 hour
         let cache = Cache::builder()
             .max_capacity(1000)
             .time_to_live(std::time::Duration::from_secs(3600))
             .build();
 
-        StatsService { cache, db }
+        StatsService { cache, db, pubg_api }
     }
 
     #[tracing::instrument(skip(self), fields(player_id = %player_id.to_hex(), period = %period, mode = %mode, shard = %shard))]
@@ -51,26 +53,70 @@ impl StatsService {
             }
         }
 
-        // Stats not in cache or expired, need to compute
-        tracing::info!("Computing stats for player {} (not in cache)", player_id.to_hex());
+        // Stats not in cache or expired, need to compute from real PUBG API data
+        tracing::info!("Computing stats from PUBG API for player {} (not in cache)", player_id.to_hex());
         
-        // Return empty stats as placeholder - computation will be done by PlayerService
-        // when fetching matches from PUBG API
-        let ttl_hours = match period {
-            "7d" => 24,   // 1 day TTL for 7 days period
-            "30d" => 72,  // 3 days TTL for 30 days period
-            "90d" => 168, // 7 days TTL for 90 days period
-            _ => 24,
-        };
+        // Fetch player to get match_ids and account_id
+        let player_repo = PlayerRepository::new(self.db.players());
+        let player = player_repo
+            .find_by_id(player_id)
+            .await?
+            .ok_or_else(|| {
+                mongodb::error::Error::custom(format!("Player not found: {}", player_id.to_hex()))
+            })?;
 
-        let stats = PlayerStats::new(
-            *player_id,
-            period.to_string(),
-            mode.to_string(),
-            shard.to_string(),
-            ttl_hours,
-        );
+        // Fetch match details from PUBG API
+        let mut matches: Vec<PubgMatchResponse> = Vec::new();
+        
+        if !player.last_matches.is_empty() {
+            tracing::info!("Fetching {} matches from PUBG API", player.last_matches.len());
+            
+            for match_id in &player.last_matches {
+                match self.pubg_api.get_match(&player.shard, match_id).await {
+                    Ok(match_data) => {
+                        tracing::debug!("Successfully fetched match {}", match_id);
+                        matches.push(match_data);
+                    }
+                    Err(e) => {
+                        // Log the error but continue with other matches
+                        tracing::warn!("Failed to fetch match {}: {}", match_id, e);
+                    }
+                }
+            }
+        }
 
+        // If no matches were fetched, return error
+        if matches.is_empty() {
+            tracing::error!("No match data available for player {}", player_id.to_hex());
+            return Err(mongodb::error::Error::custom(
+                "No match data available for this player. Please ensure the player has recent matches."
+            ));
+        }
+
+        tracing::info!("Computing stats from {} matches", matches.len());
+
+        // Compute stats from fetched matches
+        let mut stats = self.compute_stats_from_matches(&player.account_id, &matches, period);
+        
+        // Set the correct player_id, mode, and shard
+        stats.player_id = *player_id;
+        stats.mode = mode.to_string();
+        stats.shard = shard.to_string();
+
+        // Cache the stats
+        self.cache.insert(cache_key.clone(), stats.clone()).await;
+        
+        // Save to database (async, don't wait)
+        let db = self.db.clone();
+        let stats_to_save = stats.clone();
+        tokio::spawn(async move {
+            let repo = StatsRepository::new(db.stats());
+            if let Err(e) = repo.upsert(stats_to_save).await {
+                tracing::error!("Failed to save stats to database: {}", e);
+            }
+        });
+
+        tracing::info!("Stats computed successfully for player {}", player_id.to_hex());
         Ok(stats)
     }
 
@@ -88,6 +134,14 @@ impl StatsService {
             _ => now - Duration::days(7),
         };
 
+        tracing::debug!(
+            "Computing stats for period {} (from {} to {}), processing {} matches",
+            period,
+            period_start,
+            now,
+            matches.len()
+        );
+
         let mut total_kills = 0;
         let mut total_deaths = 0;
         let mut total_damage = 0.0;
@@ -101,8 +155,11 @@ impl StatsService {
                 let match_utc = match_date.with_timezone(&Utc);
                 
                 if match_utc < period_start {
+                    tracing::debug!("Skipping match {} from {} (before period start)", match_data.data.id, match_utc);
                     continue; // Skip matches outside period
                 }
+                
+                tracing::debug!("Including match {} from {} (within period)", match_data.data.id, match_utc);
             }
 
             // Find participant data for this player
@@ -149,6 +206,16 @@ impl StatsService {
             _ => 24,
         };
 
+        tracing::info!(
+            "Stats computed for period {}: {} matches, {} kills, {} deaths, K/D: {:.2}, Win rate: {:.1}%",
+            period,
+            matches_in_period,
+            total_kills,
+            total_deaths,
+            kd_ratio,
+            win_rate
+        );
+
         PlayerStats {
             id: None,
             player_id: ObjectId::new(),  // Will be set by caller
@@ -194,7 +261,7 @@ impl StatsService {
     }
 
     pub async fn invalidate_cache(&self, player_id: &ObjectId) {
-        // Invalidate all cached entries for this player
+        // Invalidate memory cache entries for this player
         let periods = ["7d", "30d", "90d"];
         let modes = ["solo", "duo", "squad", "all"];
         let shards = ["steam", "xbox", "psn"];
@@ -208,6 +275,12 @@ impl StatsService {
             }
         }
 
-        tracing::info!("Cache invalidated for player {}", player_id.to_hex());
+        // Also delete stats from MongoDB to force recomputation
+        let repo = StatsRepository::new(self.db.stats());
+        if let Err(e) = repo.delete_by_player(player_id).await {
+            tracing::warn!("Failed to delete stats from database for player {}: {}", player_id.to_hex(), e);
+        }
+
+        tracing::info!("Cache and database stats invalidated for player {}", player_id.to_hex());
     }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { PlayerStats } from '@/lib/types';
 import { ArrowUpDown, ArrowUp, ArrowDown, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -131,7 +132,14 @@ export function StatsLeaderboard({ data }: StatsLeaderboardProps) {
                     </span>
                   </div>
                 </td>
-                <td className="p-3 font-medium">{player.name}</td>
+                <td className="p-3">
+                  <Link 
+                    href={`/players/${player.player_id}`}
+                    className="font-medium hover:text-primary hover:underline transition-colors"
+                  >
+                    {player.name}
+                  </Link>
+                </td>
                 <td className="p-3 text-right font-mono text-sm">
                   {player.stats.kills.toFixed(2)}
                 </td>
@@ -142,7 +150,7 @@ export function StatsLeaderboard({ data }: StatsLeaderboardProps) {
                   {player.stats.kd_ratio.toFixed(2)}
                 </td>
                 <td className="p-3 text-right font-mono text-sm">
-                  {(player.stats.win_rate * 100).toFixed(1)}%
+                  {player.stats.win_rate.toFixed(1)}%
                 </td>
                 <td className="p-3 text-right font-mono text-sm">
                   {player.stats.matches_played}

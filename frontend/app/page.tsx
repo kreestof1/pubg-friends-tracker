@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Users, TrendingUp, Target, Zap } from 'lucide-react';
 import { useDashboard, usePlayers } from '@/hooks/use-api';
 import { LoadingSpinner } from '@/components/loading-spinner';
@@ -14,7 +15,7 @@ import type { Period, GameMode, Shard } from '@/lib/types';
 
 export default function DashboardPage() {
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
-  const [period, setPeriod] = useState<Period>('last7d');
+  const [period, setPeriod] = useState<Period>('7d');
   const [mode, setMode] = useState<GameMode>('solo');
   const [shard, setShard] = useState<Shard>('steam');
 
@@ -85,7 +86,7 @@ export default function DashboardPage() {
         <div>
           <label className="block text-sm font-medium mb-2">Period</label>
           <div className="flex gap-2">
-            {(['last7d', 'last30d', 'last90d'] as Period[]).map((p) => (
+            {(['7d', '30d', '90d'] as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
@@ -95,7 +96,7 @@ export default function DashboardPage() {
                     : 'bg-muted hover:bg-muted/80'
                 }`}
               >
-                {p === 'last7d' ? '7 Days' : p === 'last30d' ? '30 Days' : '90 Days'}
+                {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : '90 Days'}
               </button>
             ))}
           </div>
@@ -159,7 +160,12 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {dashboard.players.map((player) => (
               <div key={player.player_id} className="space-y-2">
-                <h3 className="font-semibold">{player.name}</h3>
+                <Link 
+                  href={`/players/${player.player_id}`}
+                  className="font-semibold hover:text-primary transition-colors"
+                >
+                  {player.name}
+                </Link>
                 <div className="grid grid-cols-2 gap-2">
                   <MetricCard
                     icon={Target}

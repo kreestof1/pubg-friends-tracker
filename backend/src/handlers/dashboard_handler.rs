@@ -1,12 +1,10 @@
 use axum::{extract::{Query, State}, http::StatusCode, Json};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 use crate::{
     handlers::player_handler::{AppState, ErrorResponse},
-    models::{PlayerResponse, StatsResponse},
-    services::StatsService,
+    models::StatsResponse,
 };
 
 #[derive(Debug, Deserialize)]
@@ -109,9 +107,8 @@ pub async fn get_dashboard_stats(
             }
         };
 
-        // Get stats - create a new StatsService instance to access the method
-        let stats_service = Arc::new(StatsService::new(state.player_service.db.clone()));
-        let stats = match stats_service
+        // Get stats using the shared stats_service from state
+        let stats = match state.stats_service
             .get_or_compute_stats(&player_id, &query.period, &query.mode, &query.shard)
             .await
         {

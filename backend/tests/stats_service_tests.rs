@@ -6,7 +6,7 @@ mod stats_service_tests {
     use pubg_tracker_api::{
         db::MongoDb,
         models::{PlayerStats, PubgMatchResponse},
-        services::StatsService,
+        services::{StatsService, PubgApiService},
     };
     use std::sync::Arc;
 
@@ -23,11 +23,21 @@ mod stats_service_tests {
         Arc::new(db)
     }
 
+    fn setup_test_pubg_api() -> Arc<PubgApiService> {
+        let api_key = std::env::var("PUBG_API_KEY")
+            .unwrap_or_else(|_| "test-api-key".to_string());
+        let base_url = std::env::var("PUBG_API_BASE_URL")
+            .unwrap_or_else(|_| "https://api.pubg.com/shards".to_string());
+        
+        Arc::new(PubgApiService::new(api_key, base_url))
+    }
+
     #[tokio::test]
     #[ignore] // Requires MongoDB running
     async fn test_cache_operations() {
         let db = setup_test_db().await;
-        let service = StatsService::new(db.clone());
+        let pubg_api = setup_test_pubg_api();
+        let service = StatsService::new(db.clone(), pubg_api);
         let player_id = ObjectId::new();
 
         // Test cache miss - should return empty stats
@@ -99,7 +109,8 @@ mod stats_service_tests {
     #[ignore] // Requires MongoDB running
     async fn test_stats_ttl_expiration() {
         let db = setup_test_db().await;
-        let service = StatsService::new(db.clone());
+        let pubg_api = setup_test_pubg_api();
+        let service = StatsService::new(db.clone(), pubg_api);
         let player_id = ObjectId::new();
 
         // Create stats that expire in the past

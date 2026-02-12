@@ -34,7 +34,7 @@ const metricConfig = {
   win_rate: {
     label: 'Win Rate (%)',
     color: '#f59e0b',
-    format: (value: number) => (value * 100).toFixed(1),
+    format: (value: number) => value.toFixed(1),
   },
 };
 
@@ -43,9 +43,7 @@ export function ComparisonBarChart({ data, metric, title }: ComparisonBarChartPr
 
   const chartData = data.map((player) => ({
     name: player.name,
-    value: metric === 'win_rate' 
-      ? player.stats.win_rate * 100 
-      : player.stats[metric],
+    value: player.stats[metric],
   }));
 
   return (

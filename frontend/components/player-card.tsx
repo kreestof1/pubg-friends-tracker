@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { User, Calendar, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Player } from '@/lib/types';
@@ -78,15 +79,13 @@ export function PlayerCard({
           >
             Refresh
           </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClick?.();
-            }}
-            className="flex-1 rounded-md border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          <Link
+            href={`/players/${player.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 rounded-md border bg-background px-4 py-2 text-sm font-medium text-center transition-colors hover:bg-muted"
           >
             View Details
-          </button>
+          </Link>
         </div>
       )}
 
