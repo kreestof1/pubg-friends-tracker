@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePlayers } from '@/hooks/use-api';
+import { refreshPlayer } from '@/lib/api';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { ErrorAlert } from '@/components/error-alert';
 import { EmptyState } from '@/components/empty-state';
@@ -16,6 +17,7 @@ export default function PlayersPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [shardFilter, setShardFilter] = useState<Shard | 'all'>('all');
+  const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const limit = 10;
 
   const { players, isLoading, isError, mutate } = usePlayers(page, limit);
@@ -26,6 +28,20 @@ export default function PlayersPage() {
     const matchesShard = shardFilter === 'all' || player.shard === shardFilter;
     return matchesSearch && matchesShard;
   });
+
+  const handleRefresh = async (playerId: string) => {
+    try {
+      setRefreshingId(playerId);
+      await refreshPlayer(playerId);
+      // Revalidate the players list after successful refresh
+      await mutate();
+    } catch (error) {
+      console.error('Failed to refresh player:', error);
+      // TODO: Show error toast/notification
+    } finally {
+      setRefreshingId(null);
+    }
+  };
 
   const totalPages = players ? Math.ceil(players.length / limit) : 1;
 
@@ -112,7 +128,8 @@ export default function PlayersPage() {
               <PlayerCard
                 key={player.id}
                 player={player}
-                onRefresh={() => mutate()}
+                onRefresh={() => handleRefresh(player.id)}
+                isRefreshing={refreshingId === player.id}
               />
             ))}
           </div>

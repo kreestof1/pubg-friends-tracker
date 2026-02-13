@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { User, Calendar, Target } from 'lucide-react';
+import { User, Calendar, Target, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Player } from '@/lib/types';
 
@@ -9,6 +9,7 @@ interface PlayerCardProps {
   onRefresh?: () => void;
   className?: string;
   showActions?: boolean;
+  isRefreshing?: boolean;
 }
 
 export function PlayerCard({
@@ -17,6 +18,7 @@ export function PlayerCard({
   onRefresh,
   className,
   showActions = true,
+  isRefreshing = false,
 }: PlayerCardProps) {
   const formatDate = (date?: Date) => {
     if (!date) return 'Never';
@@ -75,9 +77,11 @@ export function PlayerCard({
               e.stopPropagation();
               onRefresh?.();
             }}
-            className="flex-1 rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
+            disabled={isRefreshing}
+            className="flex-1 rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Refresh
+            <RefreshCw className={cn('w-4 h-4', isRefreshing && 'animate-spin')} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </button>
           <Link
             href={`/players/${player.id}`}

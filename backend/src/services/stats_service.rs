@@ -213,6 +213,14 @@ impl StatsService {
             win_rate
         );
 
+        if matches_in_period == 0 {
+            tracing::warn!(
+                "No matches found in period {} (checked {} total matches). Player may not have played during this period.",
+                period,
+                matches.len()
+            );
+        }
+
         PlayerStats {
             id: None,
             player_id: ObjectId::new(),  // Will be set by caller

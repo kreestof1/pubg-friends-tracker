@@ -62,13 +62,14 @@ impl PlayerService {
             shard.to_string(),
         );
 
-        // Get last 20 match IDs (to cover 7d, 30d, and 90d periods)
+        // Get up to 100 match IDs to better cover 7d, 30d, and 90d periods
+        // These will be filtered by date when computing stats
         let match_ids: Vec<String> = pubg_player
             .relationships
             .matches
             .data
             .iter()
-            .take(20)
+            .take(100)
             .map(|m| m.id.clone())
             .collect();
 
@@ -123,13 +124,14 @@ impl PlayerService {
 
         let pubg_player = &pubg_response.data[0];
 
-        // Update match list (last 20 matches to cover different time periods)
+        // Update match list (up to 100 matches to cover different time periods)
+        // These will be filtered by date when computing stats
         let match_ids: Vec<String> = pubg_player
             .relationships
             .matches
             .data
             .iter()
-            .take(20)
+            .take(100)
             .map(|m| m.id.clone())
             .collect();
 
